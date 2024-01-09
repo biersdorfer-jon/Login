@@ -7,7 +7,7 @@
 		<meta charset="utf-8">
 		<title>Sign In Page</title>
 		<link rel = "stylesheet" href = "registration.css">
-	</head> 
+	</head>  
 	<body bgcolor="#f3f3f3">
 		<header>
 			<h1>Sign In Page</h1>

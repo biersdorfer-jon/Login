@@ -4,7 +4,7 @@ session_start();
 
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
-    // Check the connection 
+    // Check the connection  
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }

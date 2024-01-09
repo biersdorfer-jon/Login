@@ -5,7 +5,7 @@
 		<title>Course List</title>
 		<link rel = "stylesheet" href = "registration.css">
 	</head>
-	<body bgcolor="#f3f3f3"> 
+	<body bgcolor="#f3f3f3">  
 		<header>
 			<h1>Course List</h1>
 		</header>

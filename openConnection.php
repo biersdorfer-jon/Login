@@ -5,7 +5,7 @@ server with default setting (user with password) */
 $servername = "localhost";
 $username = "root";
 $password = "Welcome1";
-$dbname1 = "registration"; 
+$dbname1 = "registration";  
 $dbname2 = "enrollment";
 
 $conn = new mysqli($servername, $username, $password, $dbname1);

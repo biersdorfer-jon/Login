@@ -3,7 +3,7 @@ session_start();
 
 require 'openConnection.php';
 
-// Check if the form is submitted 
+// Check if the form is submitted  
 if (isset($_POST['cancel'])) {
     // Get the selected courses to cancel
     $coursesToCancel = isset($_POST['cancel_course']) ? $_POST['cancel_course'] : [];
