@@ -5,7 +5,7 @@ $link = mysqli_connect("localhost", "root", "Welcome1");
  
 // Check connection
 if($link === false){
-    die("ERROR: Could not connect. " . mysqli_connect_error());
+    die("ERROR: Could not connect. " . mysqli_connect_error()); 
 }
  
 // Attempt create database query execution
