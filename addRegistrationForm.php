@@ -58,7 +58,7 @@ if (isset($_POST['submit'])) {
 }
 
 // Fetch course information for the table
-$courseQuery = "SELECT courseid, coursecode, coursename, capacity FROM tblcourses";
+$courseQuery = "SELECT courseid, coursecode, coursename, professorFirst, professorLast, capacity FROM tblcourses";
 $result = $conn->query($courseQuery);
 
 ?>
@@ -68,6 +68,9 @@ $result = $conn->query($courseQuery);
 		<meta charset="utf-8">
 		<title>Add New Course</title>
 		<link rel = "stylesheet" href = "registration.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 	</head>
 	<body bgcolor="#f3f3f3">
 		<header>
@@ -96,12 +99,14 @@ echo "<table border='1'>";
 echo "<tr>";
     echo  "<th>Course Code</th>";
         echo  "<th>Course Name</th>";
+        echo  "<th>Professor</th>";
         echo  "<th>Capacity</th>";
     echo "</tr>";
     while ($row = $result->fetch_assoc()) {
         echo "<tr>";
         echo "<td>" . $row['coursecode'] . "</td>";
         echo "<td>" . $row['coursename'] . "</td>";
+        echo "<td>" . $row['professorLast'] . ", "  . $row['professorFirst'] . "</td>";
         echo "<td>" . $row['capacity'] . "</td>";
         echo "</tr>";
     }
