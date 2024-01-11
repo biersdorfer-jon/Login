@@ -3,6 +3,9 @@ session_start();
 
 require 'openConnection.php';  
 
+$sessionTimeout = 5; // 30 minutes
+
+
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
     // Check if the user is already registered for the selected course
@@ -58,7 +61,7 @@ if (isset($_POST['submit'])) {
 }
 
 // Fetch course information for the table
-$courseQuery = "SELECT courseid, coursecode, coursename, professorFirst, professorLast, capacity FROM tblcourses";
+$courseQuery = "SELECT courseid, coursecode, coursename, professorFirst, professorLast, capacity, totalCapacity, credits FROM tblcourses";
 $result = $conn->query($courseQuery);
 
 ?>
@@ -93,21 +96,40 @@ $result = $conn->query($courseQuery);
 
 <?php
  if (isset($_SESSION['fname'])) {
+
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $sessionTimeout)) {
+        // Session has timed out
+        $sessionExpired = true;
+        session_unset();
+        session_destroy();
+    } else {
+        // Update last activity time
+        $_SESSION['last_activity'] = time();
+    }
+    if (isset($sessionExpired) && $sessionExpired) {
+        echo "<p>Your session has expired. Please <a href='signInForm.php'>sign in</a> again.</p>";
+    } elseif (isset($_SESSION['fname'])) {
+        // Display a welcome message for logged-in user
+
     echo "<h3>Welcome, " . $_SESSION['fname'] . "!</h3>";
+    }
 
 echo "<table border='1'>";
 echo "<tr>";
     echo  "<th>Course Code</th>";
         echo  "<th>Course Name</th>";
         echo  "<th>Professor</th>";
-        echo  "<th>Capacity</th>";
+        echo  "<th>Seats Open</th>";
+        echo  "<th>Credits</th>";
     echo "</tr>";
     while ($row = $result->fetch_assoc()) {
         echo "<tr>";
         echo "<td>" . $row['coursecode'] . "</td>";
         echo "<td>" . $row['coursename'] . "</td>";
         echo "<td>" . $row['professorLast'] . ", "  . $row['professorFirst'] . "</td>";
-        echo "<td>" . $row['capacity'] . "</td>";
+        echo "<td>" . $row['capacity'] ."/" .$row['totalCapacity'] . "</td>";
+        echo "<td>" . $row['credits'] . "</td>";
+
         echo "</tr>";
     }
     echo "</table>";
@@ -115,18 +137,20 @@ echo "<tr>";
 else {
     // Display a message for guests to sign up
     echo "<h3>Welcome, Guest!</h3>";
-    echo "<p>Please <a href='signInForm.php'>sign up</a> to view available courses and register.</p>";
+    echo "<p>Please <a href='signInForm.php'>sign in</a> to view available courses and register.</p>";
 }
+
+
 
     ?>
 
 
-<h2>Course Registration</h2>
 
+<h2>Course Registration</h2>
 <form method="post" action="">
     <label for="courseid">Select Course:</label>
     <select name="courseid" id="course">
-        <?php
+    <?php
         // Fetch course names for the dropdown list
         $dropdownQuery = "SELECT courseid, coursename FROM tblcourses";
         $dropdownResult = $conn->query($dropdownQuery);
