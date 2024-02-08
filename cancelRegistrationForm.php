@@ -68,12 +68,10 @@ $registeredCoursesStmt->bind_result($courseId, $coursename);
 		</header>
 		
 		<nav>
-			<a href = "signInForm.php">Sign In</a>&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href = "signInForm.php">Sign Up</a>&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href = "loginForm.php">Login</a>&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href = "addRegistrationForm.php">Registration</a>&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href = "cancelRegistrationForm.php">Cancel Registration</a>&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href = "courseList.php">Course List</a>&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href = "addCourseForm.php">Add New Course</a>&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href = "cancelRegistrationForm.php">View My Courses / Cancel Registration</a>&nbsp;&nbsp;&nbsp;&nbsp;
 		</nav>
 		
 		<main>

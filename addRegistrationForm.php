@@ -3,9 +3,12 @@ session_start();
 
 require 'openConnection.php';  
 
-$sessionTimeout = 5; // 30 minutes
+$sessionTimeout = 1800; // 30 minutes
 
-
+// Pagination variables
+$records_per_page = 10;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? $_GET['page'] : 1;
+$offset = ($page - 1) * $records_per_page;
 // Check if the form is submitted
 if (isset($_POST['submit'])) {
     // Check if the user is already registered for the selected course
@@ -44,14 +47,14 @@ if (isset($_POST['submit'])) {
             $insertStmt->bind_param("ii", $studentid, $selectedCourseId);
 
             if ($insertStmt->execute()) {
-                echo "Registration successful!";
+                //echo "Registration successful!";
             } else {
-                echo "Error registering for the course: " . $insertStmt->error;
+                //echo "Error registering for the course: " . $insertStmt->error;
             }
 
             $insertStmt->close();
         } else {
-            echo "Sorry, the course is full. Registration failed.";
+            //echo "Sorry, the course is full. Registration failed.";
         }
     }
 
@@ -59,113 +62,123 @@ if (isset($_POST['submit'])) {
     $checkStmt->close();
     
 }
+$totalCoursesQuery = "SELECT COUNT(*) as total FROM tblcourses";
+$totalCoursesResult = $conn->query($totalCoursesQuery);
+$totalCoursesRow = $totalCoursesResult->fetch_assoc();
+$totalCourses = $totalCoursesRow['total'];
+
 
 // Fetch course information for the table
-$courseQuery = "SELECT courseid, coursecode, coursename, professorFirst, professorLast, capacity, totalCapacity, credits FROM tblcourses";
+$courseQuery = "SELECT courseid, coursecode, coursename, professorFirst, professorLast, capacity, totalCapacity, credits FROM tblcourses LIMIT $offset, $records_per_page";
 $result = $conn->query($courseQuery);
 
 ?>
 <!DOCTYPE html>
 <html lang = "en">
-	<head>
-		<meta charset="utf-8">
-		<title>Add New Course</title>
-		<link rel = "stylesheet" href = "registration.css">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-	</head>
-	<body bgcolor="#f3f3f3">
-		<header>
-			<h1>Add New Course</h1>
-		</header>
-		
-		<nav>
-			<a href = "signInForm.php">Sign In</a>&nbsp;&nbsp;&nbsp;&nbsp;
+<head>
+    <meta charset="utf-8">
+    <title>Add New Course</title>
+    <link rel="stylesheet" href="registration.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body bgcolor="#f3f3f3">
+<header>
+    <h1>Add New Course</h1>
+</header>
+
+<nav>
+            <a href = "signInForm.php">Sign Up</a>&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href = "loginForm.php">Login</a>&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href = "addRegistrationForm.php">Registration</a>&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href = "cancelRegistrationForm.php">Cancel Registration</a>&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href = "courseList.php">Course List</a>&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href = "addCourseForm.php">Add New Course</a>&nbsp;&nbsp;&nbsp;&nbsp;
-		</nav>
+			<a href = "cancelRegistrationForm.php">View My Courses / Cancel Registration</a>&nbsp;&nbsp;&nbsp;&nbsp;
+
+</nav>
 
 <main>
-	<body bgcolor="#f3f3f3">
+    <h2>Available Courses</h2>
 
-<h2>Available Courses</h2>
+    <?php
+    if (isset($_SESSION['fname'])) {
 
-<?php
- if (isset($_SESSION['fname'])) {
+        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $sessionTimeout)) {
+            // Session has timed out
+            $sessionExpired = true;
+            session_unset();
+            session_destroy();
+        } else {
+            // Update last activity time
+            $_SESSION['last_activity'] = time();
+        }
+        if (isset($sessionExpired) && $sessionExpired) {
+            echo "<p>Your session has expired. Please <a href='loginForm.php'>sign in</a> again.</p>";
+        } elseif (isset($_SESSION['fname'])) {
+            // Display a welcome message for logged-in user
 
-    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $sessionTimeout)) {
-        // Session has timed out
-        $sessionExpired = true;
-        session_unset();
-        session_destroy();
+            echo "<h3>Welcome, " . $_SESSION['fname'] . "!</h3>";
+        }
+
+
+        if ($result->num_rows > 0) {
+            echo "<table border='1'>";
+            echo "<tr>";
+            echo "<th>Course Code</th>";
+            echo "<th>Course Name</th>";
+            echo "<th>Professor</th>";
+            echo "<th>Seats Open</th>";
+            echo "<th>Credits</th>";
+            echo "</tr>";
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>";
+                echo "<td>" . $row['coursecode'] . "</td>";
+                echo "<td>" . $row['coursename'] . "</td>";
+                echo "<td>" . $row['professorLast'] . ", " . $row['professorFirst'] . "</td>";
+                echo "<td>" . $row['capacity'] . "/" . $row['totalCapacity'] . "</td>";
+                echo "<td>" . $row['credits'] . "</td>";
+                echo "</tr>";
+            }
+            echo "</table>";
+    
+            // Pagination links
+            $total_pages = ceil($totalCourses / $records_per_page);
+            echo "<div>";
+            for ($i = 1; $i <= $total_pages; $i++) {
+                echo "<a href='?page=$i'>$i</a> ";
+            }
+            echo "</div>";
+        } else {
+            echo "No courses found.";
+        }
     } else {
-        // Update last activity time
-        $_SESSION['last_activity'] = time();
+        // Display a message for guests to sign up
+        echo "<h3>Welcome, Guest!</h3>";
+        echo "<p>Please <a href='loginForm.php'>sign in</a> to view available courses and register.</p>";
     }
-    if (isset($sessionExpired) && $sessionExpired) {
-        echo "<p>Your session has expired. Please <a href='signInForm.php'>sign in</a> again.</p>";
-    } elseif (isset($_SESSION['fname'])) {
-        // Display a welcome message for logged-in user
-
-    echo "<h3>Welcome, " . $_SESSION['fname'] . "!</h3>";
-    }
-
-echo "<table border='1'>";
-echo "<tr>";
-    echo  "<th>Course Code</th>";
-        echo  "<th>Course Name</th>";
-        echo  "<th>Professor</th>";
-        echo  "<th>Seats Open</th>";
-        echo  "<th>Credits</th>";
-    echo "</tr>";
-    while ($row = $result->fetch_assoc()) {
-        echo "<tr>";
-        echo "<td>" . $row['coursecode'] . "</td>";
-        echo "<td>" . $row['coursename'] . "</td>";
-        echo "<td>" . $row['professorLast'] . ", "  . $row['professorFirst'] . "</td>";
-        echo "<td>" . $row['capacity'] ."/" .$row['totalCapacity'] . "</td>";
-        echo "<td>" . $row['credits'] . "</td>";
-
-        echo "</tr>";
-    }
-    echo "</table>";
-}
-else {
-    // Display a message for guests to sign up
-    echo "<h3>Welcome, Guest!</h3>";
-    echo "<p>Please <a href='signInForm.php'>sign in</a> to view available courses and register.</p>";
-}
-
-
 
     ?>
 
 
+    <h2>Course Registration</h2>
+    <form method="post" action="">
+        <label for="courseid">Select Course:</label>
+        <select name="courseid" id="course">
+            <?php
+            // Fetch course names for the dropdown list
+            $dropdownQuery = "SELECT courseid, coursename FROM tblcourses";
+            $dropdownResult = $conn->query($dropdownQuery);
 
-<h2>Course Registration</h2>
-<form method="post" action="">
-    <label for="courseid">Select Course:</label>
-    <select name="courseid" id="course">
-    <?php
-        // Fetch course names for the dropdown list
-        $dropdownQuery = "SELECT courseid, coursename FROM tblcourses";
-        $dropdownResult = $conn->query($dropdownQuery);
+            while ($row = $dropdownResult->fetch_assoc()) {
+                echo "<option value='" . $row['courseid'] . "'>" . $row['coursename'] . "</option>";
+            }
+            $conn->close();
+            ?>
+        </select>
+        <input type="submit" name="submit" value="Register">
+    </form>
+</main>
 
-        while ($row = $dropdownResult->fetch_assoc()) {
-            echo "<option value='" . $row['courseid'] . "'>" . $row['coursename'] . "</option>";
-        }
-        $conn->close();
-        ?>
-    </select>
-    <input type="submit" name="submit" value="Register">
-</form>
-		</main>
-		
-		<footer>
+<footer>
 		
 			<div id="copyright">
 			
@@ -177,15 +190,3 @@ else {
 		</footer>
 	</body>
 </html> 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
